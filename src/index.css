@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-midnight: #0A1D3D;
+    --color-canvas: #F8FAFC;
+    --color-surface-slate: #F1F5F9;
+    --color-border-subtle: #E2E8F0;
+    --color-border-strong: #CBD5E1;
+    --color-primary-navy: #1446A0;
+    --color-secondary-blue: #1E88E5;
+    --color-accent-cyan: #00C2FF;
+    --color-status-green: #10B981;
+    --color-status-amber: #D97706;
+    --color-status-red: #DC2626;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #F8FAFC;
+    color: #0F172A;
+    overflow-x: hidden;
+  }
+}
+
+/* Tabular numbers for numerical grades, coefficients, currency, matricules */
+.tabular-nums, .data-tabular {
+  font-family: 'Inter', monospace;
+  font-feature-settings: "tnum" 1, "cv05" 1, "zero" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-mono-tabular {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dense table styling */
+.ledger-table th {
+  letter-spacing: 0.04em;
+}
+
+/* Custom scrollbars for dense data grids */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Print styling for official bulletins and receipts */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}

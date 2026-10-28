@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "name": "New Version School Tools",
+  "short_name": "SchoolTools",
+  "description": "Logiciel de gestion académique, saisie des notes, calculs de moyennes et bulletins pour écoles primaires, collèges et lycées (Pointe-Noire).",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0A1D3D",
+  "background_color": "#F8FAFC",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#0A1D3D"/>
+  <rect x="32" y="32" width="448" height="448" rx="72" fill="none" stroke="#1446A0" stroke-width="12"/>
+  
+  <!-- Central Emblem / Academic Shield & Ledger -->
+  <path d="M256 96 L384 156 L384 276 C384 360 256 420 256 420 C256 420 128 360 128 276 L128 156 Z" fill="#1446A0" stroke="#00C2FF" stroke-width="8"/>
+  
+  <!-- Book / Ledger Pages -->
+  <path d="M176 210 Q256 225 256 330 Q256 225 336 210 L336 310 Q256 325 256 370 Q256 325 176 310 Z" fill="#FFFFFF"/>
+  <line x1="256" y1="225" x2="256" y2="370" stroke="#0A1D3D" stroke-width="6"/>
+  
+  <!-- Graduation Cap -->
+  <polygon points="256,130 336,170 256,205 176,170" fill="#00C2FF"/>
+  <path d="M336 170 L346 220" stroke="#00C2FF" stroke-width="6" stroke-linecap="round"/>
+</svg>

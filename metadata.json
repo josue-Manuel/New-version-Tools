@@ -1,0 +1,6 @@
+{
+  "name": "Equatorial Academic Core",
+  "description": "Institutional academic administration, grade deliberation ledger, and offline-resilient registrar system for Congolese secondary education in Pointe-Noire.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
