@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  FlaskConical,
+  Database,
   Calendar,
   Settings as SettingsIcon,
 } from 'lucide-react';
@@ -10,10 +10,15 @@ import { NavigationSection, SchoolConfig } from '../../domain/types';
 
 interface AppHeaderProps {
   config: SchoolConfig | null;
+  storageHealth?: {
+    status: 'ok' | 'error' | 'warning';
+    message: string;
+    backendType: string;
+  } | null;
   onNavigate: (section: NavigationSection) => void;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ config, onNavigate }) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({ config, storageHealth, onNavigate }) => {
   const isConfigured = Boolean(config && config.isConfigured);
 
   return (
@@ -55,13 +60,20 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ config, onNavigate }) => {
           </div>
         )}
 
-        {/* Demo / Target Engine Status badge */}
+        {/* Dynamic Engine Status badge */}
         <div
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#FFFAEB] border border-[#FEDF89] text-xs text-[#B54708] font-medium"
-          title="Prévisualisation web — Stockage temporaire en mémoire. L'exécution 100% hors-ligne et la base locale SQLite seront activées dans le client de bureau Tauri 2."
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#F0FDF4] border border-[#BBF7D0] text-xs text-[#166534] font-medium"
+          title={
+            storageHealth?.message ||
+            "Stockage persistant actif : vos données sont conservées sur ce navigateur même après actualisation (F5)."
+          }
         >
-          <FlaskConical className="w-3.5 h-3.5 text-[#B54708]" />
-          <span>Mode de démonstration — stockage natif à intégrer</span>
+          <Database className="w-3.5 h-3.5 text-[#166534]" />
+          <span>
+            {storageHealth?.backendType
+              ? `Stockage : ${storageHealth.backendType}`
+              : 'Stockage local persistant'}
+          </span>
         </div>
 
         {/* Quick config button if not yet configured */}

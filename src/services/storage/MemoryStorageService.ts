@@ -10,6 +10,7 @@
 
 import { DashboardMetrics, SchoolConfig } from '../../domain/types';
 import { IStorageService } from './IStorageService';
+import { validateSchoolConfig } from './configValidation';
 
 export class MemoryStorageService implements IStorageService {
   private config: SchoolConfig | null = null;
@@ -31,25 +32,7 @@ export class MemoryStorageService implements IStorageService {
 
   async saveSchoolConfig(config: SchoolConfig): Promise<void> {
     // Validation stricte
-    if (!config.name || config.name.trim().length === 0) {
-      throw new Error("Le nom de l'établissement est obligatoire.");
-    }
-
-    if (!config.academicYear || config.academicYear.trim().length === 0) {
-      throw new Error("L'année scolaire est obligatoire.");
-    }
-
-    // Validation du format d'année scolaire (ex: 2024-2025 ou 2024/2025)
-    const yearPattern = /^(\d{4})[-/](\d{4})$/;
-    const match = config.academicYear.trim().match(yearPattern);
-    if (!match) {
-      throw new Error("Format d'année scolaire invalide. Utilisez le format 'AAAA-AAAA' (ex: 2024-2025).");
-    }
-    const y1 = parseInt(match[1], 10);
-    const y2 = parseInt(match[2], 10);
-    if (y2 !== y1 + 1) {
-      throw new Error(`L'année scolaire doit couvrir deux années consécutives (ex: ${y1}-${y1 + 1}).`);
-    }
+    validateSchoolConfig(config);
 
     this.config = {
       ...config,

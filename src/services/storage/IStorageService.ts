@@ -9,6 +9,24 @@
 
 import { DashboardMetrics, SchoolConfig } from '../../domain/types';
 
+export interface StorageIncident {
+  step: 'openDB' | 'transaction' | 'put' | 'get' | 'delete';
+  errorName: string;
+  errorMessage: string;
+  timestamp: string;
+  probableCause: string;
+}
+
+export interface StorageDiagnostics {
+  primaryEngine: 'IndexedDB';
+  activeEngine: 'IndexedDB' | 'localStorage' | 'Memory' | string;
+  isPersistent: boolean;
+  indexedDBAvailable: boolean;
+  localStorageAvailable: boolean;
+  isIndexedDBBlocked: boolean;
+  lastIncident: StorageIncident | null;
+}
+
 export interface IStorageService {
   /**
    * Récupère la configuration actuelle de l'établissement.
@@ -36,5 +54,10 @@ export interface IStorageService {
   /**
    * Vérifie si le socle technique est opérationnel et prêt.
    */
-  checkHealth(): Promise<{ status: 'ok' | 'error'; message: string; backendType: string }>;
+  checkHealth(): Promise<{
+    status: 'ok' | 'error' | 'warning';
+    message: string;
+    backendType: string;
+    diagnostics?: StorageDiagnostics;
+  }>;
 }

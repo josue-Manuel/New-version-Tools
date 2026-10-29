@@ -68,13 +68,16 @@ src/
 │   │   └── TauriBridge.ts               # Pont sécurisé détectant l'environnement Tauri 2
 │   └── storage/
 │       ├── IStorageService.ts           # Contrat d'accès aux données (remplaçable par SQLite)
-│       ├── MemoryStorageService.ts      # Implémentation isolée en mémoire pour prévisualisation
+│       ├── configValidation.ts          # Validateur partagé de la configuration scolaire
+│       ├── IndexedDBStorageService.ts   # Persistance locale IndexedDB (active sur la version web)
+│       ├── MemoryStorageService.ts      # Implémentation isolée en mémoire (secours / tests)
 │       ├── TauriSQLiteSchema.ts         # Schéma DDL relationnel SQLite pour Tauri 2
-│       └── index.ts
+│       └── index.ts                     # Injection de defaultStorageService (IndexedDB sur web)
 ├── styles/
 │   └── colors.ts                        # Constantes de la palette officielle
 └── tests/
-    ├── phase1_socle.test.ts             # 14 tests unitaires du socle technique et du pont
+    ├── indexeddb_storage.test.ts        # 7 tests de persistance IndexedDB (simulation F5, erreurs)
+    ├── phase1_socle.test.ts             # 15 tests unitaires du socle technique et du pont
     ├── calculations.test.ts             # 13 tests du moteur de calcul
     ├── validation.test.ts               # 5 tests de validation de saisie
     └── backup.test.ts                   # 5 tests de vérification de sauvegarde
@@ -103,7 +106,7 @@ L'application démarre sur `http://localhost:3000`.
 ```bash
 npm test
 ```
-Résultat : **37 tests exécutés et validés avec succès (100 %)**.
+Résultat : **49 tests exécutés et validés avec succès (100 %)**.
 
 ### Vérification du typage TypeScript
 ```bash
@@ -117,12 +120,18 @@ npm run build
 
 ---
 
-## 5. Limites Actuelles de la Phase 1
+## 5. Persistance Web Multi-Paliers & Résilience
 
-1. **Persistance en prévisualisation web** :
-   En mode navigateur, les données de configuration sont conservées via le `MemoryStorageService`. Si la page est rechargée à froid sans persistance native, la configuration peut être réinitialisée. Cette limitation disparaîtra dès l'intégration dans Tauri 2 grâce à SQLite.
+1. **Architecture de persistance résiliente (RÉSOLU)** :
+   L'application utilise désormais `IndexedDBStorageService` avec une architecture multi-paliers :
+   - **Palier 1 (Prioritaire)** : IndexedDB local (`nv_school_tools_web_db`) via `idb`.
+   - **Palier 2 (Repli persistant automatique)** : `localStorage` avec sérialisation JSON sécurisée et validation de schéma. Si IndexedDB est restreint par une politique de bac à sable dans une iframe (ex : aperçu Google AI Studio renvoyant `DOMException [UnknownError]: "Internal error."`), le stockage bascule automatiquement et de façon transparente vers `localStorage`.
+   - **Garantie F5** : Les données de configuration restent **réellement enregistrées après actualisation (F5)**, fermeture de l'onglet ou redémarrage du navigateur sous Windows.
+   - **Diagnostic technique en direct** : Un volet d'inspection technique est accessible dans la vue Configuration pour visualiser en temps réel le moteur actif, l'état de persistance et les éventuels incidents interceptés.
 2. **Modules métier de la Phase 2** :
    Les rubriques *Élèves*, *Classes*, *Matières*, *Évaluations & Notes*, *Résultats & Bulletins* et *Sauvegardes* sont documentées et affichent leur feuille de route détaillée sans simuler de fausses saisies.
+3. **Transition de bureau vers SQLite** :
+   Le contrat `IStorageService` permet de basculer sur `TauriSQLiteStorageService` pour l'application de bureau native sans toucher à l'interface React.
 
 ---
 

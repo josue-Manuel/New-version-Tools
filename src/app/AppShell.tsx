@@ -9,7 +9,7 @@ import {
   NavigationSection,
   SchoolConfig,
 } from '../domain/types';
-import { defaultStorageService } from '../services/storage/MemoryStorageService';
+import { defaultStorageService } from '../services/storage';
 
 export const AppShell: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<NavigationSection>('dashboard');
@@ -22,18 +22,26 @@ export const AppShell: React.FC = () => {
     gradesRecordedCount: 0,
     isConfigured: false,
   });
+  const [storageHealth, setStorageHealth] = useState<{
+    status: 'ok' | 'error' | 'warning';
+    message: string;
+    backendType: string;
+    diagnostics?: any;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Recharge la configuration et les métriques depuis le service de stockage
+  // Recharge la configuration, les métriques et l'état de santé du stockage
   const refreshAppData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [loadedConfig, loadedMetrics] = await Promise.all([
+      const [loadedConfig, loadedMetrics, loadedHealth] = await Promise.all([
         defaultStorageService.getSchoolConfig(),
         defaultStorageService.getDashboardMetrics(),
+        defaultStorageService.checkHealth(),
       ]);
       setConfig(loadedConfig);
       setMetrics(loadedMetrics);
+      setStorageHealth(loadedHealth);
     } catch (err) {
       console.error('Erreur de chargement du service de stockage:', err);
     } finally {
@@ -70,7 +78,11 @@ export const AppShell: React.FC = () => {
       {/* Contenu principal */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* En-tête supérieur avec statut hors-ligne */}
-        <AppHeader config={config} onNavigate={setCurrentSection} />
+        <AppHeader
+          config={config}
+          storageHealth={storageHealth}
+          onNavigate={setCurrentSection}
+        />
 
         {/* Zone de vue défilable */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8">
@@ -91,6 +103,7 @@ export const AppShell: React.FC = () => {
               {currentSection === 'settings' && (
                 <SettingsView
                   currentConfig={config}
+                  storageHealth={storageHealth}
                   onSave={handleSaveConfig}
                   onReset={handleResetConfig}
                 />
