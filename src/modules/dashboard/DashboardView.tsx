@@ -245,7 +245,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           >
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs font-bold text-[#182230]">Élèves & Inscriptions</span>
-              <Badge variant="neutral" size="sm">Phase 2</Badge>
+              <Badge variant="success" size="sm">Opérationnel</Badge>
             </div>
             <p className="text-xs text-[#667085]">
               Matricules uniques, import CSV, affectation aux classes.

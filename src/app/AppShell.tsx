@@ -4,12 +4,14 @@ import { AppHeader } from '../components/layout/AppHeader';
 import { DashboardView } from '../modules/dashboard/DashboardView';
 import { SettingsView } from '../modules/settings/SettingsView';
 import { PhasePlaceholderView } from '../components/common/PhasePlaceholderView';
+import { StudentsView } from '../modules/students/StudentsView';
 import {
   DashboardMetrics,
   NavigationSection,
   SchoolConfig,
 } from '../domain/types';
 import { defaultStorageService } from '../services/storage';
+import { defaultAppDatabase } from '../services/storage/repositories/WebAppDatabase';
 
 export const AppShell: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<NavigationSection>('dashboard');
@@ -34,13 +36,19 @@ export const AppShell: React.FC = () => {
   const refreshAppData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [loadedConfig, loadedMetrics, loadedHealth] = await Promise.all([
+      const [loadedConfig, loadedMetrics, loadedHealth, studentsCount, classesCount] = await Promise.all([
         defaultStorageService.getSchoolConfig(),
         defaultStorageService.getDashboardMetrics(),
         defaultStorageService.checkHealth(),
+        defaultAppDatabase.students.count().catch(() => 0),
+        defaultAppDatabase.classes.count().catch(() => 0),
       ]);
       setConfig(loadedConfig);
-      setMetrics(loadedMetrics);
+      setMetrics({
+        ...loadedMetrics,
+        studentsCount,
+        classesCount,
+      });
       setStorageHealth(loadedHealth);
     } catch (err) {
       console.error('Erreur de chargement du service de stockage:', err);
@@ -100,6 +108,10 @@ export const AppShell: React.FC = () => {
                 />
               )}
 
+              {currentSection === 'students' && (
+                <StudentsView onStudentChanged={refreshAppData} />
+              )}
+
               {currentSection === 'settings' && (
                 <SettingsView
                   currentConfig={config}
@@ -109,12 +121,14 @@ export const AppShell: React.FC = () => {
                 />
               )}
 
-              {currentSection !== 'dashboard' && currentSection !== 'settings' && (
-                <PhasePlaceholderView
-                  section={currentSection}
-                  onBackToDashboard={() => setCurrentSection('dashboard')}
-                />
-              )}
+              {currentSection !== 'dashboard' &&
+                currentSection !== 'students' &&
+                currentSection !== 'settings' && (
+                  <PhasePlaceholderView
+                    section={currentSection}
+                    onBackToDashboard={() => setCurrentSection('dashboard')}
+                  />
+                )}
             </>
           )}
         </main>

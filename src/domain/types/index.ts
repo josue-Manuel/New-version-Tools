@@ -54,6 +54,10 @@ export interface Student {
   schoolClassId: string;
   gender: 'M' | 'F';
   birthDate?: string;
+  birthPlace?: string;
+  guardianName?: string;
+  guardianPhone?: string;
+  guardianAddress?: string;
   active: boolean;
   enrolledAt: string;
 }

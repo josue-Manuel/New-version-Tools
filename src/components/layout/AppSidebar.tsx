@@ -39,8 +39,7 @@ const NAV_ITEMS: NavItem[] = [
     id: 'students',
     label: 'Élèves',
     icon: Users,
-    isReadyInPhase1: false,
-    phaseNote: 'Phase 2',
+    isReadyInPhase1: true,
   },
   {
     id: 'classes',
