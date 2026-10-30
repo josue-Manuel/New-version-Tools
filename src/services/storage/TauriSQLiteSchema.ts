@@ -113,11 +113,41 @@ CREATE TABLE IF NOT EXISTS grades (
     FOREIGN KEY(assessment_id) REFERENCES assessments(id) ON DELETE CASCADE
 );
 
+-- Table: affectation matières par classe
+CREATE TABLE IF NOT EXISTS class_subjects (
+    id TEXT PRIMARY KEY,
+    school_class_id TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    coefficient REAL NOT NULL DEFAULT 1.0,
+    teacher_name TEXT,
+    FOREIGN KEY(school_class_id) REFERENCES school_classes(id),
+    FOREIGN KEY(subject_id) REFERENCES subjects(id)
+);
+
+-- Table: comptabilité & frais scolaires (paiements et reçus)
+CREATE TABLE IF NOT EXISTS fee_transactions (
+    id TEXT PRIMARY KEY,
+    receipt_number TEXT NOT NULL UNIQUE,
+    student_id TEXT NOT NULL,
+    school_class_id TEXT,
+    amount REAL NOT NULL,
+    installment TEXT NOT NULL,
+    payment_method TEXT NOT NULL,
+    transaction_reference TEXT,
+    cashier_name TEXT,
+    timestamp TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('Validé', 'Quittancé', 'Annulé')),
+    notes TEXT,
+    FOREIGN KEY(student_id) REFERENCES students(id)
+);
+
 -- Index pour optimiser la recherche et la génération des bulletins
 CREATE INDEX IF NOT EXISTS idx_students_class ON students(school_class_id);
 CREATE INDEX IF NOT EXISTS idx_assessments_class_period ON assessments(school_class_id, period_id);
 CREATE INDEX IF NOT EXISTS idx_grades_assessment ON grades(assessment_id);
 CREATE INDEX IF NOT EXISTS idx_grades_student ON grades(student_id);
+CREATE INDEX IF NOT EXISTS idx_class_subjects_class ON class_subjects(school_class_id);
+CREATE INDEX IF NOT EXISTS idx_fee_transactions_student ON fee_transactions(student_id);
 `;
 
 /**

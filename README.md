@@ -54,8 +54,19 @@ src/
 │       ├── Input.tsx                    # Champs de saisie avec validation d'erreurs
 │       └── Select.tsx                   # Sélecteur typé
 ├── domain/
+│   ├── repositories/                    # Contrats de dépôts métier (Repository Pattern)
+│   │   ├── IRepository.ts               # Interface générique CRUD
+│   │   ├── IStudentRepository.ts        # Gestion élèves, matricules, archivage
+│   │   ├── IClassRepository.ts          # Classes, niveaux d'enseignement
+│   │   ├── ISubjectRepository.ts        # Matières, coefficients, affectations
+│   │   ├── IAssessmentRepository.ts     # Évaluations, devoirs, compositions
+│   │   ├── IGradeRepository.ts          # Notes, matrices, suppression en cascade
+│   │   ├── IPaymentRepository.ts        # Frais scolaires, reçus, solde élève
+│   │   ├── ISchoolConfigRepository.ts   # Séparation stricte configuration vs données
+│   │   ├── IAppDatabase.ts              # Unité de travail centralisée (Unit of Work)
+│   │   └── index.ts                     # Export centralisé des contrats
 │   └── types/
-│       └── index.ts                     # Modèle TypeScript strict (School, Student, Grade...)
+│       └── index.ts                     # Modèle TypeScript strict du domaine
 ├── modules/
 │   ├── dashboard/
 │   │   └── DashboardView.tsx            # Tableau de bord initial aux métriques véridiques
@@ -67,18 +78,30 @@ src/
 │   ├── native/
 │   │   └── TauriBridge.ts               # Pont sécurisé détectant l'environnement Tauri 2
 │   └── storage/
-│       ├── IStorageService.ts           # Contrat d'accès aux données (remplaçable par SQLite)
-│       ├── configValidation.ts          # Validateur partagé de la configuration scolaire
-│       ├── IndexedDBStorageService.ts   # Persistance locale IndexedDB (active sur la version web)
-│       ├── MemoryStorageService.ts      # Implémentation isolée en mémoire (secours / tests)
-│       ├── TauriSQLiteSchema.ts         # Schéma DDL relationnel SQLite pour Tauri 2
-│       └── index.ts                     # Injection de defaultStorageService (IndexedDB sur web)
+│       ├── IStorageService.ts           # Contrat Phase 1 de configuration
+│       ├── IndexedDBStorageService.ts   # Persistance multi-paliers de configuration
+│       ├── MemoryStorageService.ts      # Implémentation mémoire isolée (tests)
+│       ├── TauriSQLiteSchema.ts         # Schéma relationnel SQLite complet (Tauri 2)
+│       ├── db/
+│       │   ├── WebDatabaseSchema.ts     # Magasins d'objets IndexedDB versionnés (v1 -> v2)
+│       │   └── WebStorageAdapter.ts     # Moteur résilient IndexedDB / localStorage / Mémoire
+│       └── repositories/
+│           ├── IndexedDBSchoolConfigRepository.ts
+│           ├── IndexedDBStudentRepository.ts
+│           ├── IndexedDBClassRepository.ts
+│           ├── IndexedDBSubjectRepository.ts
+│           ├── IndexedDBAssessmentRepository.ts
+│           ├── IndexedDBGradeRepository.ts
+│           ├── IndexedDBPaymentRepository.ts
+│           ├── WebAppDatabase.ts         # Implémentation IAppDatabase pour le Web
+│           └── index.ts                 # Export de defaultAppDatabase
 ├── styles/
 │   └── colors.ts                        # Constantes de la palette officielle
 └── tests/
-    ├── indexeddb_storage.test.ts        # 7 tests de persistance IndexedDB (simulation F5, erreurs)
-    ├── phase1_socle.test.ts             # 15 tests unitaires du socle technique et du pont
-    ├── calculations.test.ts             # 13 tests du moteur de calcul
+    ├── repositories_phase2.test.ts      # 12 tests d'intégrité des dépôts Phase 2
+    ├── indexeddb_storage.test.ts        # 11 tests de persistance multi-paliers & F5
+    ├── phase1_socle.test.ts             # 15 tests du socle technique et du pont natif
+    ├── calculations.test.ts             # 13 tests du moteur de calcul académique
     ├── validation.test.ts               # 5 tests de validation de saisie
     └── backup.test.ts                   # 5 tests de vérification de sauvegarde
 ```
@@ -106,7 +129,7 @@ L'application démarre sur `http://localhost:3000`.
 ```bash
 npm test
 ```
-Résultat : **49 tests exécutés et validés avec succès (100 %)**.
+Résultat : **61 tests exécutés et validés avec succès (100 %)**.
 
 ### Vérification du typage TypeScript
 ```bash
@@ -120,18 +143,25 @@ npm run build
 
 ---
 
-## 5. Persistance Web Multi-Paliers & Résilience
+## 5. Architecture de Stockage Cible & Préparation Phase 2
 
-1. **Architecture de persistance résiliente (RÉSOLU)** :
-   L'application utilise désormais `IndexedDBStorageService` avec une architecture multi-paliers :
-   - **Palier 1 (Prioritaire)** : IndexedDB local (`nv_school_tools_web_db`) via `idb`.
-   - **Palier 2 (Repli persistant automatique)** : `localStorage` avec sérialisation JSON sécurisée et validation de schéma. Si IndexedDB est restreint par une politique de bac à sable dans une iframe (ex : aperçu Google AI Studio renvoyant `DOMException [UnknownError]: "Internal error."`), le stockage bascule automatiquement et de façon transparente vers `localStorage`.
-   - **Garantie F5** : Les données de configuration restent **réellement enregistrées après actualisation (F5)**, fermeture de l'onglet ou redémarrage du navigateur sous Windows.
-   - **Diagnostic technique en direct** : Un volet d'inspection technique est accessible dans la vue Configuration pour visualiser en temps réel le moteur actif, l'état de persistance et les éventuels incidents interceptés.
-2. **Modules métier de la Phase 2** :
-   Les rubriques *Élèves*, *Classes*, *Matières*, *Évaluations & Notes*, *Résultats & Bulletins* et *Sauvegardes* sont documentées et affichent leur feuille de route détaillée sans simuler de fausses saisies.
-3. **Transition de bureau vers SQLite** :
-   Le contrat `IStorageService` permet de basculer sur `TauriSQLiteStorageService` pour l'application de bureau native sans toucher à l'interface React.
+1. **Centralisation par Repository Pattern & Unit of Work (IAppDatabase)** :
+   L'application dispose d'une architecture découplée évitant tout appel direct à `localStorage` dans les composants métier :
+   - `defaultAppDatabase.students` : Inscriptions, recherche matricule, archivage.
+   - `defaultAppDatabase.classes` : Niveaux, classes, affectations.
+   - `defaultAppDatabase.subjects` : Catalogue national, coefficients par classe.
+   - `defaultAppDatabase.assessments` : Devoirs surveillés, interrogations, compositions.
+   - `defaultAppDatabase.grades` : Notes réelles (distinction note `0/20` vs absence non notée `null`).
+   - `defaultAppDatabase.payments` : Encaissements de scolarité, reçus officiels, solde par élève.
+   - `defaultAppDatabase.schoolConfig` : Séparation étanche de la configuration et des données élèves.
+
+2. **Résilience Web Multi-Paliers** :
+   - IndexedDB natif (`nv_school_tools_web_db` v2) en palier prioritaire.
+   - Repli transparent sur `localStorage` partitionné en cas d'environnement restreint (iframe de prévisualisation Google AI Studio), assurant la **survie des données après rechargement de page (F5)**.
+
+3. **Transition Transparente vers Tauri 2 & SQLite** :
+   - Le schéma SQLite DDL (`TauriSQLiteSchema.ts`) contient 100 % des tables nécessaires (`school_config`, `academic_years`, `school_levels`, `school_classes`, `students`, `subjects`, `class_subjects`, `periods`, `assessments`, `grades`, `fee_transactions`).
+   - L'intégration ultérieure de Tauri 2 consistera uniquement à instancier une classe `TauriSQLiteAppDatabase implements IAppDatabase`, sans réécrire aucun composant React ni aucune règle de calcul.
 
 ---
 

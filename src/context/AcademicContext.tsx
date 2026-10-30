@@ -448,16 +448,14 @@ export const AcademicProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setIsOnline((prev) => !prev);
   }, []);
 
-  // Offline queue synchronization
+  // Offline queue processing (fonctionnement 100 % local-first, aucun serveur distant requis)
   const syncOfflineQueue = useCallback(async () => {
     if (offlineQueue.length === 0) return;
     setIsSyncing(true);
 
-    // Simulate high-reliability handshake with DDEPS Pointe-Noire ministerial server
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-
+    // Enregistrement des mutations locales dans le journal de caisse/notes local
     const syncDate = new Date();
-    const formatted = `Aujourd’hui à ${syncDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} (DDEPS Pointe-Noire)`;
+    const formatted = `Journal local validé le ${syncDate.toLocaleDateString('fr-FR')} à ${syncDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
 
     setOfflineQueue([]);
     setLastSyncTime(formatted);

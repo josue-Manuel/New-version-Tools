@@ -95,6 +95,95 @@ export interface Grade {
   updatedAt: string;
 }
 
+export interface ClassSubject {
+  id: string;
+  schoolClassId: string;
+  subjectId: string;
+  coefficient: number;
+  teacherName?: string;
+}
+
+export type PaymentMethod =
+  | 'Airtel Money Congo'
+  | 'MTN Mobile Money'
+  | 'Espèces au Guichet'
+  | 'Virement Bancaire (BGFI)'
+  | 'Chèque'
+  | 'Autre';
+
+export type InstallmentType =
+  | 'Frais Inscription'
+  | 'Tranche 1'
+  | 'Tranche 2'
+  | 'Tranche 3'
+  | 'Frais Examen Bac'
+  | 'Frais Examen BEPC'
+  | 'Autre Frais';
+
+export interface FeeTransaction {
+  id: string;
+  receiptNumber: string; // Ex: REC-2026-0042
+  studentId: string;
+  studentNumber?: string;
+  studentName?: string;
+  schoolClassId?: string;
+  amount: number; // Montant en FCFA
+  installment: InstallmentType;
+  paymentMethod: PaymentMethod;
+  transactionReference?: string;
+  cashierName?: string;
+  timestamp: string; // Date ISO
+  status: 'Validé' | 'Quittancé' | 'Annulé';
+  notes?: string;
+}
+
+export interface CalculationConfig {
+  roundingRule: 'half-up' | 'floor' | 'ceil' | 'none';
+  decimalPlaces: number;
+  passThreshold: number; // Seuil d'admission (10.00/20 ou 5.00/10)
+  normalizeScoresToScale: boolean; // Si maxScore != 20, normaliser à 20
+  mentionThresholds: {
+    veryGood: number; // >= 16
+    good: number; // >= 14
+    fairlyGood: number; // >= 12
+    pass: number; // >= 10
+  };
+}
+
+export interface SubjectCalculationResult {
+  subjectId: string;
+  subjectName: string;
+  coefficient: number;
+  teacherName?: string;
+  assessmentsCount: number;
+  gradesCount: number;
+  missingGradesCount: number;
+  unroundedAverage: number | null;
+  roundedAverage: number | null;
+  weightedPoints: number | null;
+  classStats: {
+    min: number | null;
+    max: number | null;
+    classAverage: number | null;
+  };
+  rankInSubject: number | null;
+  mention: string;
+}
+
+export interface StudentTrimesterSummary {
+  studentId: string;
+  student: Student;
+  periodId: string;
+  subjectResults: Record<string, SubjectCalculationResult>;
+  totalWeightedPoints: number | null;
+  totalCoefficients: number;
+  generalAverage: number | null;
+  rankInClass: number | null;
+  mention: string;
+  councilDecision: string;
+  hasIncompleteData: boolean;
+}
+
 /**
  * Configuration initiale de l'établissement.
  * Utilisée en Phase 1 pour initialiser le logiciel avant la gestion complète.
@@ -136,3 +225,4 @@ export type NavigationSection =
   | 'bulletins'
   | 'backups'
   | 'settings';
+
